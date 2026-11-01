@@ -5,6 +5,7 @@ from typing import Literal
 import httpx
 from dotenv import load_dotenv
 from fastapi import FastAPI, HTTPException
+from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel, Field
 from azure.identity import DefaultAzureCredential
@@ -24,6 +25,21 @@ ARM_API_VERSION = "2025-06-01"
 ARM_SCOPE = "https://management.azure.com/.default"
 
 app = FastAPI(title="Roundtable API")
+frontend_origins = [
+    origin.strip()
+    for origin in os.getenv(
+        "FRONTEND_ORIGINS",
+        "http://127.0.0.1:8000,http://localhost:8000,https://spidrman99.github.io",
+    ).split(",")
+    if origin.strip()
+]
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=frontend_origins,
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
+)
 credential = DefaultAzureCredential()
 
 

@@ -91,6 +91,16 @@ python -m uvicorn app:app --reload
 
 Open http://127.0.0.1:8000. FastAPI's interactive API documentation is at http://127.0.0.1:8000/docs.
 
+## Publish the webpage with GitHub Pages
+
+The static webpage is deployed from `web/` by the GitHub Actions workflow in `.github/workflows/pages.yml`. After pushing to `main`, open the repository's **Settings → Pages** and set **Source** to **GitHub Actions** if it is not already selected. The workflow then deploys the page at:
+
+`https://spidrman99.github.io/Roundtable/`
+
+GitHub Pages only hosts the HTML, CSS, and JavaScript. It does not run FastAPI. To make model search and chat work online, deploy this Python backend to a separate HTTPS host, then edit `web/config.js` and set `window.ROUNDTABLE_API_BASE` to that backend's public base URL (no trailing slash). Push the config change to redeploy the page. Keep Azure keys and subscription settings in the backend host's environment variables; never put them in `web/config.js`.
+
+The backend allows the GitHub Pages origin by default. If you use another frontend domain, set `FRONTEND_ORIGINS` in the backend environment to a comma-separated list of permitted origins.
+
 ## Using Roundtable
 
 1. Search the model list and select a model for AI One.

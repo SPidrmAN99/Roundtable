@@ -701,9 +701,12 @@ body {
   </div>
 </dialog>
 
+<script src="./config.js"></script>
 <script>
 (() => {
   const $ = id => document.getElementById(id);
+  const API_BASE = String(window.ROUNDTABLE_API_BASE || "").replace(/\/+$/, "");
+  const apiUrl = path => `${API_BASE}${path}`;
   const CHAT_STORAGE_KEY = "roundtable-chats-v1";
   const MODEL_STORAGE_KEY = "roundtable-model-configs-v1";
 
@@ -1056,7 +1059,7 @@ body {
   }
 
   async function createAzureDeployment(model, deploymentName, skuName, capacity) {
-    const response = await fetch("/api/deployments", {
+    const response = await fetch(apiUrl("/api/deployments"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1083,7 +1086,7 @@ body {
       await new Promise(resolve => setTimeout(resolve, 5000));
 
       const statusResponse = await fetch(
-        `/api/deployments/${encodeURIComponent(deploymentName)}`
+        apiUrl(`/api/deployments/${encodeURIComponent(deploymentName)}`)
       );
       const statusData = await statusResponse.json();
 
@@ -1228,7 +1231,7 @@ function buildModelHistory(chat) {
 }
 
   async function askModel(model, persona, history) {
-    const response = await fetch("/api/chat", {
+    const response = await fetch(apiUrl("/api/chat"), {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -1344,7 +1347,7 @@ async function sendMessage() {
     $("status").classList.remove("online");
 
     try {
-      const response = await fetch("/api/models");
+      const response = await fetch(apiUrl("/api/models"));
       const data = await response.json();
 
       if (!response.ok) {

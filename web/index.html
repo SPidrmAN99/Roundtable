@@ -1,0 +1,1452 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#000000">
+<title>Roundtable</title>
+
+<style>
+:root {
+  --black: #000;
+  --panel: #05090d;
+  --line: #163044;
+  --blue: #13c8ff;
+  --yellow: #ffe44d;
+  --red: #ff3048;
+  --text: #e8f7ff;
+  --muted: #7793a5;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  height: 100vh;
+  overflow: hidden;
+  color: var(--text);
+  background: #000;
+  background-image:
+    linear-gradient(#13c8ff1b 1px, transparent 1px),
+    linear-gradient(90deg, #13c8ff1b 1px, transparent 1px);
+  background-size: 24px 24px;
+  font-family: "Segoe UI", Arial, sans-serif;
+}
+button, input, textarea, select { font: inherit; }
+button { color: inherit; }
+
+.shell {
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  height: 100vh;
+}
+.sidebar {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #020609;
+  border-right: 1px solid var(--line);
+}
+.brand {
+  padding: 22px 18px;
+  border-bottom: 1px solid var(--line);
+}
+.brand-mark {
+  color: var(--red);
+  font-size: 12px;
+  letter-spacing: 3px;
+}
+.brand h1 {
+  margin: 9px 0 0;
+  font-size: 20px;
+  letter-spacing: 3px;
+  text-transform: uppercase;
+}
+.new-chat {
+  margin: 16px;
+  padding: 12px;
+  text-align: left;
+  background: #07131a;
+  border: 1px solid var(--blue);
+  cursor: pointer;
+}
+.new-chat:hover { background: #0b2633; }
+.new-chat span { color: var(--blue); margin-right: 8px; }
+.history-title {
+  padding: 2px 17px 10px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+.chat-list {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0 9px 14px;
+}
+.chat-item {
+  display: block;
+  width: 100%;
+  padding: 11px 10px;
+  margin-bottom: 3px;
+  overflow: hidden;
+  color: #b5c9d3;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+.chat-item:hover { background: #08131b; }
+.chat-item.active {
+  color: var(--text);
+  background: #091923;
+  border-color: #16445a;
+  box-shadow: inset 2px 0 var(--blue);
+}
+.sidebar-note {
+  padding: 13px 16px;
+  color: #557285;
+  border-top: 1px solid var(--line);
+  font-size: 11px;
+  line-height: 1.5;
+}
+
+.main {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  background: #000;
+}
+.topbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 72px;
+  padding: 12px 20px;
+  background: #020609;
+  border-bottom: 1px solid var(--line);
+}
+.topbar-left {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.menu-button {
+  display: none;
+  padding: 7px 10px;
+  background: #07131a;
+  border: 1px solid var(--line);
+  cursor: pointer;
+}
+.top-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.subtitle {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.status {
+  color: var(--muted);
+  font-size: 11px;
+}
+.status::before {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 7px;
+  background: var(--yellow);
+  content: "";
+}
+.status.online::before {
+  background: var(--blue);
+  box-shadow: 0 0 8px var(--blue);
+}
+
+.stage {
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 34px minmax(0, 1fr);
+  gap: 12px;
+  padding: 14px 20px;
+  background: #03080c;
+  border-bottom: 1px solid var(--line);
+}
+.seat {
+  position: relative;
+  min-width: 0;
+  padding: 10px 12px;
+  background: #03070a;
+  border: 1px solid #17384b;
+}
+.seat.one { border-left: 3px solid var(--red); }
+.seat.two { border-left: 3px solid var(--yellow); }
+.seat-label {
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1.5px;
+}
+.seat.one .seat-label { color: var(--red); }
+.seat.two .seat-label { color: var(--yellow); }
+
+.picker-button {
+  width: 100%;
+  padding: 4px 0;
+  overflow: hidden;
+  color: var(--text);
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.picker-button::after {
+  float: right;
+  color: var(--blue);
+  content: "⌄";
+}
+.picker-menu {
+  position: absolute;
+  top: calc(100% + 5px);
+  right: -1px;
+  left: -1px;
+  z-index: 10;
+  display: none;
+  padding: 8px;
+  background: #03080c;
+  border: 1px solid var(--blue);
+  box-shadow: 0 10px 30px #000;
+}
+.picker-menu.open { display: block; }
+.picker-search {
+  width: 100%;
+  margin-bottom: 7px;
+  padding: 9px;
+  color: var(--text);
+  background: #000;
+  border: 1px solid #17384b;
+  outline: none;
+}
+.picker-search:focus { border-color: var(--blue); }
+.picker-options {
+  max-height: 230px;
+  overflow-y: auto;
+}
+.model-option {
+  display: block;
+  width: 100%;
+  padding: 9px;
+  overflow: hidden;
+  color: #b9d0dc;
+  text-align: left;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+}
+.model-option:hover,
+.model-option.selected {
+  color: var(--blue);
+  background: #081923;
+}
+.no-models {
+  padding: 10px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.seat-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.seat-action {
+  padding: 6px 8px;
+  color: var(--blue);
+  background: #03090d;
+  border: 1px solid #164056;
+  cursor: pointer;
+  font-size: 10px;
+}
+.seat-action:hover {
+  color: #000;
+  background: var(--blue);
+}
+.seat-action:disabled {
+  color: #527080;
+  border-color: #18303e;
+  cursor: not-allowed;
+}
+.versus {
+  align-self: center;
+  color: var(--yellow);
+  text-align: center;
+}
+
+.messages {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 24px clamp(14px, 4vw, 60px);
+  background-color: #000;
+  background-image:
+    linear-gradient(#13c8ff15 1px, transparent 1px),
+    linear-gradient(90deg, #13c8ff15 1px, transparent 1px);
+  background-size: 24px 24px;
+}
+.welcome {
+  max-width: 540px;
+  margin: auto;
+  padding: 50px 18px;
+  color: var(--muted);
+  text-align: center;
+}
+.welcome-symbol {
+  color: var(--yellow);
+  font-size: 32px;
+}
+.welcome h2 {
+  color: var(--text);
+  font-size: 21px;
+}
+.welcome p { line-height: 1.6; }
+.message {
+  max-width: min(76%, 680px);
+  margin: 0 0 14px;
+  padding: 11px 13px;
+  color: var(--text);
+  line-height: 1.55;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  background: #050d13;
+  border: 1px solid #17384b;
+  border-left: 3px solid var(--blue);
+}
+.message.user {
+  margin-left: auto;
+  color: #fff8c9;
+  background: #100f05;
+  border-color: #685c16;
+  border-left: 3px solid var(--yellow);
+}
+.message.ai2 { border-left-color: var(--yellow); }
+.message.ai1 { border-left-color: var(--red); }
+.message-name {
+  margin-bottom: 5px;
+  color: var(--blue);
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.message.ai1 .message-name { color: var(--red); }
+.message.ai2 .message-name { color: var(--yellow); }
+.message.user .message-name { color: var(--yellow); }
+.message-time {
+  margin-top: 5px;
+  color: #557285;
+  text-align: right;
+  font-size: 9px;
+}
+
+.composer-area {
+  padding: 12px 18px;
+  background: #020609;
+  border-top: 1px solid var(--line);
+}
+.notice {
+  display: none;
+  margin-bottom: 9px;
+  padding: 9px 11px;
+  color: #ffe978;
+  background: #171505;
+  border: 1px solid #665b16;
+  font-size: 12px;
+  line-height: 1.5;
+}
+.notice.show { display: block; }
+.composer { display: flex; gap: 9px; }
+.composer textarea {
+  flex: 1;
+  min-height: 48px;
+  max-height: 130px;
+  resize: vertical;
+  padding: 13px;
+  color: var(--text);
+  background: #000;
+  border: 1px solid #17384b;
+  outline: none;
+}
+.composer textarea:focus { border-color: var(--blue); }
+.send-button {
+  width: 50px;
+  color: #001018;
+  background: var(--blue);
+  border: 0;
+  cursor: pointer;
+}
+.send-button:disabled { opacity: .45; cursor: not-allowed; }
+.controls {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 9px;
+}
+.controls small {
+  color: #557285;
+  font-size: 10px;
+}
+.control-buttons { display: flex; gap: 7px; }
+.control-button {
+  padding: 8px 10px;
+  color: var(--blue);
+  background: #030a0f;
+  border: 1px solid #164056;
+  cursor: pointer;
+}
+.control-button:disabled { opacity: .45; cursor: not-allowed; }
+.footer {
+  padding: 0 12px 10px;
+  color: #456174;
+  text-align: center;
+  background: #020609;
+  font-size: 9px;
+}
+
+/* Configuration and deployment dialog */
+#modelDialog {
+  width: min(540px, calc(100vw - 28px));
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 0;
+  color: var(--text);
+  background: #03080c;
+  border: 1px solid var(--blue);
+}
+#modelDialog::backdrop { background: #000c; }
+.dialog-content { padding: 20px; }
+.dialog-heading {
+  color: var(--blue);
+  font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.dialog-help {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.5;
+}
+.dialog-field { margin: 16px 0; }
+.dialog-field label {
+  display: block;
+  margin: 10px 0 6px;
+  color: var(--muted);
+  font-size: 11px;
+}
+.dialog-field input,
+.dialog-field textarea,
+.dialog-field select {
+  width: 100%;
+  padding: 10px;
+  color: var(--text);
+  background: #000;
+  border: 1px solid var(--line);
+  outline: none;
+}
+.dialog-field textarea { resize: vertical; }
+.dialog-field input:focus,
+.dialog-field textarea:focus,
+.dialog-field select:focus { border-color: var(--blue); }
+.cost-note {
+  padding: 9px;
+  color: #ffe978;
+  background: #171505;
+  border: 1px solid #665b16;
+  font-size: 11px;
+  line-height: 1.5;
+}
+.dialog-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+.save-button {
+  color: var(--blue);
+  border-color: var(--blue);
+}
+.save-button:hover {
+  color: #000;
+  background: var(--blue);
+}
+.hidden { display: none !important; }
+.backdrop { display: none; }
+
+@media (max-width: 760px) {
+  .shell { grid-template-columns: minmax(0, 1fr); }
+  .sidebar {
+    position: fixed;
+    top: 0;
+    bottom: 0;
+    left: 0;
+    z-index: 30;
+    width: min(300px, 85vw);
+    transform: translateX(-102%);
+    transition: transform .18s ease;
+  }
+  .shell.sidebar-open .sidebar { transform: translateX(0); }
+  .shell.sidebar-open .backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 20;
+    display: block;
+    background: #000a;
+  }
+  .menu-button { display: block; }
+  .topbar { padding: 10px 12px; }
+  .stage {
+    padding: 10px;
+    gap: 7px;
+    grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+  }
+  .seat { padding: 9px; }
+  .messages { padding: 18px 12px; }
+  .message { max-width: 90%; }
+}
+html,
+body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.shell {
+  height: 100dvh;
+  min-height: 0;
+  grid-template-rows: minmax(0, 1fr);
+  overflow: hidden;
+}
+
+.sidebar,
+.main {
+  min-height: 0;
+}
+
+.main {
+  height: 100%;
+  overflow: hidden;
+}
+
+.topbar,
+.stage,
+.composer-area,
+.footer {
+  flex: 0 0 auto;
+}
+
+.messages {
+  flex: 1 1 0;
+  min-height: 0;
+  overflow-y: scroll;
+  overscroll-behavior: contain;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: #13c8ff #07131a;
+}
+
+.messages::-webkit-scrollbar {
+  width: 10px;
+}
+
+.messages::-webkit-scrollbar-track {
+  background: #07131a;
+}
+
+.messages::-webkit-scrollbar-thumb {
+  background: #13c8ff;
+  border: 2px solid #07131a;
+}
+
+.messages::-webkit-scrollbar-thumb:hover {
+  background: #ffe44d;
+}
+</style>
+</head>
+
+<body>
+<div class="shell" id="shell">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">◉ // TWO MODELS · ONE ROOM</div>
+      <h1>Roundtable</h1>
+    </div>
+
+    <button class="new-chat" id="newChatButton"><span>＋</span>New chat</button>
+    <div class="history-title">Previous chats</div>
+    <nav class="chat-list" id="chatList"></nav>
+    <div class="sidebar-note">Chats are saved in this browser. Models are deployed through your backend.</div>
+  </aside>
+
+  <div class="backdrop" id="backdrop"></div>
+
+  <main class="main">
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-button" id="menuButton" aria-label="Open chat history">☰</button>
+        <div>
+          <div class="top-title">Your AI roundtable</div>
+          <div class="subtitle">You, and two AIs who know they’re AIs</div>
+        </div>
+      </div>
+      <div class="status" id="status">Loading catalog…</div>
+    </header>
+
+    <section class="stage">
+      <div class="seat one">
+        <div class="seat-label">✳ &nbsp; AI ONE</div>
+        <button class="picker-button" id="model1Button">Loading catalog…</button>
+        <div class="picker-menu" id="model1Menu">
+          <input class="picker-search" id="model1Search" placeholder="Search catalog…" autocomplete="off">
+          <div class="picker-options" id="model1Options"></div>
+        </div>
+        <div class="seat-actions">
+          <button class="seat-action" id="addModelOne">＋ Deploy model</button>
+          <button class="seat-action" id="instructionsOne">Custom instructions</button>
+          <button class="seat-action" id="renameOne">Rename</button>
+        </div>
+      </div>
+
+      <div class="versus">↔</div>
+
+      <div class="seat two">
+        <div class="seat-label">✦ &nbsp; AI TWO</div>
+        <button class="picker-button" id="model2Button">Loading catalog…</button>
+        <div class="picker-menu" id="model2Menu">
+          <input class="picker-search" id="model2Search" placeholder="Search catalog…" autocomplete="off">
+          <div class="picker-options" id="model2Options"></div>
+        </div>
+        <div class="seat-actions">
+          <button class="seat-action" id="addModelTwo">＋ Deploy model</button>
+          <button class="seat-action" id="instructionsTwo">Custom instructions</button>
+          <button class="seat-action" id="renameTwo">Rename</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="messages" id="messages"></section>
+
+    <section class="composer-area">
+      <div class="notice" id="notice"></div>
+      <div class="composer">
+        <textarea id="prompt" rows="1" placeholder="Message the roundtable…"></textarea>
+        <button class="send-button" id="sendButton" aria-label="Send message">➤</button>
+      </div>
+      <div class="controls">
+        <small>Replies alternate between the selected models.</small>
+        <div class="control-buttons">
+          <button class="control-button" id="stopButton" disabled>Stop</button>
+          <button class="control-button" id="turnButton">Turns: 4</button>
+        </div>
+      </div>
+    </section>
+
+    <footer class="footer">AI-generated replies can be wrong. Review important information.</footer>
+  </main>
+</div>
+
+<dialog id="modelDialog">
+  <div class="dialog-content">
+    <div class="dialog-heading" id="dialogHeading">Configure model</div>
+    <p class="dialog-help" id="dialogHelp"></p>
+
+    <div id="deploymentField" class="dialog-field">
+      <label for="deploymentName">Azure deployment name</label>
+      <input id="deploymentName" placeholder="Name for this deployment">
+
+      <label for="deploymentSku">Deployment SKU</label>
+      <select id="deploymentSku"></select>
+
+      <label for="deploymentCapacity">Capacity</label>
+      <input id="deploymentCapacity" type="number" min="1" value="1">
+
+      <p class="cost-note">
+        Creating a deployment can incur Azure charges. Review the deployment
+        type, capacity, and pricing in Foundry before continuing.
+      </p>
+      <p class="dialog-help" id="deploymentProgress"></p>
+    </div>
+
+    <div id="renameField" class="dialog-field hidden">
+      <label for="renameValue">Display name</label>
+      <input id="renameValue" placeholder="For example: The Skeptic">
+    </div>
+
+    <div id="instructionsField" class="dialog-field hidden">
+      <label for="instructionsValue">Custom instructions</label>
+      <textarea id="instructionsValue" rows="6"
+        placeholder="Describe this AI's personality, role, tone, and how it should respond."></textarea>
+    </div>
+
+    <div class="dialog-buttons">
+      <button class="control-button" id="cancelModelEdit">Cancel</button>
+      <button class="control-button save-button" id="saveModelEdit">Save</button>
+    </div>
+  </div>
+</dialog>
+
+<script>
+(() => {
+  const $ = id => document.getElementById(id);
+  const CHAT_STORAGE_KEY = "roundtable-chats-v1";
+  const MODEL_STORAGE_KEY = "roundtable-model-configs-v1";
+
+  let completedTurnsThisRun = 0;
+  let targetTurnsThisRun = 0;
+  let models = [];
+  let chats = [];
+  let activeChatId = null;
+  let busy = false;
+  let stopRequested = false;
+  let maxTurns = 4;
+  let selectedModels = { one: "", two: "" };
+  let configuredModels = {};
+  let editingModel = { seat: null, type: null };
+
+  try {
+    configuredModels = JSON.parse(localStorage.getItem(MODEL_STORAGE_KEY) || "{}");
+  } catch {
+    configuredModels = {};
+  }
+
+  try {
+    chats = JSON.parse(localStorage.getItem(CHAT_STORAGE_KEY) || "[]");
+  } catch {
+    chats = [];
+  }
+
+  function showNotice(text) {
+    $("notice").textContent = text;
+    $("notice").classList.toggle("show", Boolean(text));
+  }
+
+  function currentChat() {
+    return chats.find(chat => chat.id === activeChatId);
+  }
+
+  function saveChats() {
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chats));
+    renderChatList();
+  }
+
+  function saveModelConfigs() {
+    localStorage.setItem(MODEL_STORAGE_KEY, JSON.stringify(configuredModels));
+  }
+
+  function modelConfigKey(seat, modelId = selectedModels[seat]) {
+    return modelId ? `${seat}:${modelId}` : "";
+  }
+
+  function getModelConfig(seat) {
+    const key = modelConfigKey(seat);
+    return key ? configuredModels[key] || null : null;
+  }
+
+  function selectedCatalogModel(seat) {
+    return models.find(model => model.id === selectedModels[seat]) || null;
+  }
+
+  function makeChat() {
+    return {
+      id: crypto.randomUUID(),
+      title: "New chat",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      model1: selectedModels.one || "",
+      model2: selectedModels.two || "",
+      messages: []
+    };
+  }
+
+  function renderChatList() {
+    const list = $("chatList");
+    list.innerHTML = "";
+
+    chats
+      .slice()
+      .sort((a, b) => b.updatedAt - a.updatedAt)
+      .forEach(chat => {
+        const button = document.createElement("button");
+        button.className = "chat-item" + (chat.id === activeChatId ? " active" : "");
+        button.textContent = chat.title || "New chat";
+        button.title = chat.title || "New chat";
+        button.addEventListener("click", () => openChat(chat.id));
+        list.appendChild(button);
+      });
+  }
+
+  function renderMessages() {
+    const area = $("messages");
+    area.innerHTML = "";
+
+    const chat = currentChat();
+    if (!chat || !chat.messages.length) {
+      const welcome = document.createElement("div");
+      welcome.className = "welcome";
+      welcome.innerHTML = `
+        <div class="welcome-symbol">✧</div>
+        <h2>A conversation starts with you</h2>
+        <p>Choose two models, send a message, and let them take turns exploring the topic with you.</p>
+      `;
+      area.appendChild(welcome);
+      return;
+    }
+
+    chat.messages.forEach(message => {
+      const bubble = document.createElement("article");
+      bubble.className = `message ${message.role}`;
+
+      const name = document.createElement("div");
+      name.className = "message-name";
+      name.textContent = message.name;
+
+      const content = document.createElement("div");
+      content.textContent = message.content;
+
+      const time = document.createElement("div");
+      time.className = "message-time";
+      time.textContent = message.time || "";
+
+      bubble.append(name, content, time);
+      area.appendChild(bubble);
+    });
+
+    area.scrollTop = area.scrollHeight;
+  }
+
+  function renderChatState() {
+    renderChatList();
+    renderMessages();
+    updatePickerLabels();
+    updateSeatButtons();
+  }
+
+  function newChat() {
+    const chat = makeChat();
+    chats.unshift(chat);
+    activeChatId = chat.id;
+    renderChatState();
+    closeSidebar();
+    showNotice("");
+  }
+
+  function openChat(id) {
+    activeChatId = id;
+    const chat = currentChat();
+
+    selectedModels = {
+      one: chat?.model1 || "",
+      two: chat?.model2 || ""
+    };
+
+    renderChatState();
+    closeSidebar();
+    showNotice("");
+  }
+
+  function updatePickerLabels() {
+    const configOne = getModelConfig("one");
+    const configTwo = getModelConfig("two");
+    const modelOne = selectedCatalogModel("one");
+    const modelTwo = selectedCatalogModel("two");
+
+    $("model1Button").textContent =
+      configOne?.displayName ||
+      (modelOne ? `${modelOne.name} · ${modelOne.version}` : "Select a model");
+
+    $("model2Button").textContent =
+      configTwo?.displayName ||
+      (modelTwo ? `${modelTwo.name} · ${modelTwo.version}` : "Select a model");
+  }
+
+  function updateSeatButtons() {
+    const configOne = getModelConfig("one");
+    const configTwo = getModelConfig("two");
+
+    $("addModelOne").textContent = configOne ? "✓ Deployed" : "＋ Deploy model";
+    $("addModelTwo").textContent = configTwo ? "✓ Deployed" : "＋ Deploy model";
+
+    $("addModelOne").disabled = Boolean(configOne);
+    $("addModelTwo").disabled = Boolean(configTwo);
+
+    $("instructionsOne").disabled = !configOne;
+    $("renameOne").disabled = !configOne;
+    $("instructionsTwo").disabled = !configTwo;
+    $("renameTwo").disabled = !configTwo;
+  }
+
+  function renderModelOptions(seat, query = "") {
+    const target = seat === "one" ? $("model1Options") : $("model2Options");
+    const currentId = selectedModels[seat];
+    const normalizedQuery = query.trim().toLowerCase();
+
+    const shown = models.filter(model =>
+      `${model.name} ${model.format} ${model.version} ${model.publisher || ""}`
+        .toLowerCase()
+        .includes(normalizedQuery)
+    );
+
+    target.innerHTML = "";
+
+    if (!shown.length) {
+      const empty = document.createElement("div");
+      empty.className = "no-models";
+      empty.textContent = models.length
+        ? "No matching models."
+        : "No models loaded from the backend.";
+      target.appendChild(empty);
+      return;
+    }
+
+    shown.forEach(model => {
+      const option = document.createElement("button");
+      option.className = "model-option" + (model.id === currentId ? " selected" : "");
+      option.textContent = `${model.name} · ${model.version} · ${model.format}`;
+      option.title = `${model.name}, version ${model.version}, ${model.format}`;
+
+      option.addEventListener("click", () => {
+        selectedModels[seat] = model.id;
+
+        const chat = currentChat();
+        if (chat) {
+          chat.model1 = selectedModels.one;
+          chat.model2 = selectedModels.two;
+          chat.updatedAt = Date.now();
+          saveChats();
+        }
+
+        updatePickerLabels();
+        updateSeatButtons();
+        closePickers();
+      });
+
+      target.appendChild(option);
+    });
+  }
+
+  function openPicker(seat) {
+    closePickers();
+
+    const menu = seat === "one" ? $("model1Menu") : $("model2Menu");
+    const search = seat === "one" ? $("model1Search") : $("model2Search");
+
+    menu.classList.add("open");
+    search.value = "";
+    renderModelOptions(seat);
+    search.focus();
+  }
+
+  function closePickers() {
+    $("model1Menu").classList.remove("open");
+    $("model2Menu").classList.remove("open");
+  }
+
+  function closeSidebar() {
+    $("shell").classList.remove("sidebar-open");
+  }
+
+  function fillSkuOptions(model) {
+    const select = $("deploymentSku");
+    select.innerHTML = "";
+
+    const skus = model?.skus || [];
+    skus.forEach(sku => {
+      const option = document.createElement("option");
+      option.value = sku.name;
+      option.textContent = sku.name;
+      select.appendChild(option);
+    });
+
+    updateCapacityFromSku(model);
+
+    if (!skus.length) {
+      const option = document.createElement("option");
+      option.value = "";
+      option.textContent = "No deployment SKU available";
+      select.appendChild(option);
+      $("saveModelEdit").disabled = true;
+    } else {
+      $("saveModelEdit").disabled = false;
+    }
+  }
+
+  function updateCapacityFromSku(model) {
+    const selectedSku = $("deploymentSku").value;
+    const sku = (model?.skus || []).find(item => item.name === selectedSku);
+    const capacity = sku?.capacity || {};
+    const input = $("deploymentCapacity");
+
+    input.min = capacity.minimum || 1;
+    input.max = capacity.maximum || "";
+    input.step = capacity.step || 1;
+    input.value = capacity.default || capacity.minimum || 1;
+  }
+
+  function openModelEditor(type, seat) {
+    const modelId = selectedModels[seat];
+
+    if (!modelId) {
+      showNotice("Select a catalog model first.");
+      return;
+    }
+
+    const model = selectedCatalogModel(seat);
+    const config = getModelConfig(seat);
+
+    if (type !== "add" && !config) {
+      showNotice("Deploy this model first, then rename it or add custom instructions.");
+      return;
+    }
+
+    editingModel = { seat, type };
+
+    $("deploymentField").classList.toggle("hidden", type !== "add");
+    $("renameField").classList.toggle("hidden", type !== "rename");
+    $("instructionsField").classList.toggle("hidden", type !== "instructions");
+
+    const seatName = seat === "one" ? "AI One" : "AI Two";
+
+    if (type === "add") {
+      $("dialogHeading").textContent = `Deploy model for ${seatName}`;
+      $("dialogHelp").textContent =
+        `${model.name}, version ${model.version}, ${model.format}`;
+
+      const safeName = model.name
+        .toLowerCase()
+        .replace(/[^a-z0-9_.-]/g, "-")
+        .replace(/^[^a-z0-9]+/, "")
+        .slice(0, 45);
+
+      $("deploymentName").value =
+        config?.deploymentName || `${safeName}-${seat}`;
+
+      $("deploymentProgress").textContent = "";
+      fillSkuOptions(model);
+    } else if (type === "rename") {
+      $("dialogHeading").textContent = `Rename ${seatName}`;
+      $("dialogHelp").textContent = "This is the name shown in the conversation.";
+      $("renameValue").value = config.displayName || model.name;
+      $("saveModelEdit").disabled = false;
+    } else {
+      $("dialogHeading").textContent = `${seatName} custom instructions`;
+      $("dialogHelp").textContent =
+        "Set this AI's personality, expertise, tone, and conversation style.";
+      $("instructionsValue").value = config.persona || "";
+      $("saveModelEdit").disabled = false;
+    }
+
+    showNotice("");
+    $("modelDialog").showModal();
+  }
+
+  async function createAzureDeployment(model, deploymentName, skuName, capacity) {
+    const response = await fetch("/api/deployments", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model_name: model.name,
+        model_format: model.format,
+        model_version: model.version,
+        publisher: model.publisher || null,
+        deployment_name: deploymentName,
+        sku_name: skuName,
+        capacity: Number(capacity)
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || `Deployment request failed (${response.status}).`);
+    }
+
+    $("deploymentProgress").textContent =
+      `Azure accepted the request. Status: ${data.provisioningState}`;
+
+    for (let attempt = 0; attempt < 180; attempt++) {
+      await new Promise(resolve => setTimeout(resolve, 5000));
+
+      const statusResponse = await fetch(
+        `/api/deployments/${encodeURIComponent(deploymentName)}`
+      );
+      const statusData = await statusResponse.json();
+
+      if (!statusResponse.ok) {
+        if (statusResponse.status === 404 && attempt < 5) continue;
+        throw new Error(statusData.detail || "Could not check deployment status.");
+      }
+
+      const state = statusData.provisioningState;
+      $("deploymentProgress").textContent = `Deployment status: ${state}`;
+
+      if (state === "Succeeded") return;
+      if (state === "Failed" || state === "Canceled") {
+        throw new Error(`Azure deployment ended with status: ${state}`);
+      }
+    }
+
+    throw new Error(
+      "Deployment is still provisioning. Check Foundry Deployments before trying again."
+    );
+  }
+
+  async function saveModelEditor() {
+    const { seat, type } = editingModel;
+    const modelId = selectedModels[seat];
+
+    if (!seat || !modelId) return;
+
+    const model = selectedCatalogModel(seat);
+    const key = `${seat}:${modelId}`;
+    const config = configuredModels[key] || {
+      catalogModel: modelId,
+      deploymentName: "",
+      displayName: model?.name || modelId,
+      persona: "Be helpful, natural, and conversational."
+    };
+
+    const saveButton = $("saveModelEdit");
+    const cancelButton = $("cancelModelEdit");
+    saveButton.disabled = true;
+
+    try {
+      if (type === "add") {
+        const deploymentName = $("deploymentName").value.trim();
+        const skuName = $("deploymentSku").value;
+        const capacity = Number($("deploymentCapacity").value);
+
+        if (!deploymentName || !skuName || !capacity) {
+          throw new Error("Enter a deployment name, SKU, and capacity.");
+        }
+
+        const confirmed = window.confirm(
+          `Create Azure deployment "${deploymentName}" using ${skuName} at capacity ${capacity}? This may incur Azure charges.`
+        );
+
+        if (!confirmed) return;
+
+        saveButton.textContent = "Deploying…";
+        cancelButton.disabled = true;
+
+        await createAzureDeployment(model, deploymentName, skuName, capacity);
+
+        config.catalogModel = modelId;
+        config.deploymentName = deploymentName;
+        config.skuName = skuName;
+        config.capacity = capacity;
+      } else if (type === "rename") {
+        const displayName = $("renameValue").value.trim();
+        if (!displayName) throw new Error("Enter a display name.");
+        config.displayName = displayName;
+      } else if (type === "instructions") {
+        const persona = $("instructionsValue").value.trim();
+        if (!persona) throw new Error("Enter custom instructions.");
+        config.persona = persona;
+      }
+
+      configuredModels[key] = config;
+      localStorage.setItem(MODEL_STORAGE_KEY, JSON.stringify(configuredModels));
+
+      const chat = currentChat();
+      if (chat) {
+        chat.model1 = selectedModels.one;
+        chat.model2 = selectedModels.two;
+        chat.updatedAt = Date.now();
+        saveChats();
+      }
+
+      updatePickerLabels();
+      updateSeatButtons();
+      $("modelDialog").close();
+      showNotice("");
+    } catch (error) {
+      $("deploymentProgress").textContent = error.message;
+      showNotice(error.message);
+    } finally {
+      saveButton.disabled = false;
+      saveButton.textContent = "Save";
+      cancelButton.disabled = false;
+    }
+  }
+
+  function addMessage(role, name, content) {
+    let chat = currentChat();
+
+    if (!chat) {
+      newChat();
+      chat = currentChat();
+    }
+
+    chat.messages.push({
+      role,
+      name,
+      content,
+      time: new Date().toLocaleTimeString([], {
+        hour: "2-digit",
+        minute: "2-digit"
+      })
+    });
+
+    if (role === "user" && chat.title === "New chat") {
+      chat.title = content.slice(0, 42) || "New chat";
+    }
+
+    chat.updatedAt = Date.now();
+    saveChats();
+    renderMessages();
+  }
+
+function buildModelHistory(chat) {
+  const transcript = chat.messages
+    .map(message => `[${message.name}]: ${message.content}`)
+    .join("\n\n");
+
+  return [{
+    role: "user",
+    content:
+      "This is the complete shared group conversation so far. " +
+      "Speaker labels identify who wrote each message. Read the messages " +
+      "from both the human and the other AI, then continue from the latest point.\n\n" +
+      transcript
+  }];
+}
+
+  async function askModel(model, persona, history) {
+    const response = await fetch("/api/chat", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        model,
+        persona,
+        messages: history
+      })
+    });
+
+    const data = await response.json();
+
+    if (!response.ok) {
+      throw new Error(data.detail || `Chat request failed (${response.status}).`);
+    }
+
+    return data.choices?.[0]?.message?.content?.trim()
+      || "(The model returned an empty reply.)";
+  }
+
+async function sendMessage() {
+  showNotice("");
+
+  const text = $("prompt").value.trim();
+  if (!text) return;
+
+  if (!models.length) {
+    showNotice("No models are loaded. Check that the backend is running.");
+    return;
+  }
+
+  if (!selectedModels.one || !selectedModels.two) {
+    showNotice("Choose a model for both AI seats first.");
+    return;
+  }
+
+  const configOne = getModelConfig("one");
+  const configTwo = getModelConfig("two");
+
+  if (!configOne || !configTwo) {
+    showNotice("Deploy both selected models before starting the conversation.");
+    return;
+  }
+
+  if (!currentChat()) newChat();
+
+  const chat = currentChat();
+  $("prompt").value = "";
+
+  // Show the user's message immediately, even while a model is responding.
+  addMessage("user", "You", text);
+
+  // There is already a turn loop running. Its next request will include
+  // this new message in the conversation history.
+  if (busy) {
+    targetTurnsThisRun = Math.max(
+      targetTurnsThisRun,
+      completedTurnsThisRun + maxTurns
+    );
+    return;
+  }
+
+  busy = true;
+  stopRequested = false;
+  completedTurnsThisRun = 0;
+  targetTurnsThisRun = maxTurns;
+  $("stopButton").disabled = false;
+
+  const nameOne = configOne.displayName || "AI One";
+  const nameTwo = configTwo.displayName || "AI Two";
+
+  try {
+    while (
+      completedTurnsThisRun < targetTurnsThisRun &&
+      !stopRequested
+    ) {
+      const isOne = completedTurnsThisRun % 2 === 0;
+      const config = isOne ? configOne : configTwo;
+      const name = isOne ? nameOne : nameTwo;
+      const otherName = isOne ? nameTwo : nameOne;
+      const role = isOne ? "ai1" : "ai2";
+
+      const persona =
+        `${config.persona}\n\n` +
+        `You are ${name}, an AI in a shared group conversation with the user ` +
+        `and another AI named ${otherName}. You know you are an AI; never ` +
+        `pretend to be human. Read the whole conversation history. Respond to ` +
+        `the newest message. When the other AI has spoken, address its specific ` +
+        `point, add a distinct perspective, and keep the discussion moving. ` +
+        `Don't repeatedly ask the user what they want next. Be natural and concise.`;
+
+      // Build history immediately before each request. Messages sent while
+      // the previous AI was responding are therefore included on this turn.
+      const history = buildModelHistory(chat);
+      const answer = await askModel(
+        config.deploymentName,
+        persona,
+        history
+      );
+
+      addMessage(role, name, answer);
+      completedTurnsThisRun++;
+    }
+  } catch (error) {
+    showNotice(error.message);
+  } finally {
+    busy = false;
+    $("stopButton").disabled = true;
+    $("prompt").focus();
+  }
+}
+  async function loadModels() {
+    $("status").textContent = "Loading catalog…";
+    $("status").classList.remove("online");
+
+    try {
+      const response = await fetch("/api/models");
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.detail || `Could not load models (${response.status}).`);
+      }
+
+      models = (data.data || data.models || [])
+        .filter(model => model.id && model.name && model.format)
+        .sort((a, b) => a.name.localeCompare(b.name));
+
+      $("status").textContent = models.length
+        ? `${models.length} models available`
+        : "No models found";
+
+      if (models.length) $("status").classList.add("online");
+
+      renderModelOptions("one");
+      renderModelOptions("two");
+      updatePickerLabels();
+      updateSeatButtons();
+
+      if (!models.length) {
+        showNotice("The backend returned no deployable models for this account.");
+      }
+    } catch (error) {
+      $("status").textContent = "Backend connection issue";
+      showNotice(error.message);
+    }
+  }
+
+  $("newChatButton").addEventListener("click", newChat);
+  $("model1Button").addEventListener("click", () => openPicker("one"));
+  $("model2Button").addEventListener("click", () => openPicker("two"));
+
+  $("model1Search").addEventListener("input", event =>
+    renderModelOptions("one", event.target.value)
+  );
+  $("model2Search").addEventListener("input", event =>
+    renderModelOptions("two", event.target.value)
+  );
+
+  $("addModelOne").addEventListener("click", () => openModelEditor("add", "one"));
+  $("instructionsOne").addEventListener("click", () => openModelEditor("instructions", "one"));
+  $("renameOne").addEventListener("click", () => openModelEditor("rename", "one"));
+
+  $("addModelTwo").addEventListener("click", () => openModelEditor("add", "two"));
+  $("instructionsTwo").addEventListener("click", () => openModelEditor("instructions", "two"));
+  $("renameTwo").addEventListener("click", () => openModelEditor("rename", "two"));
+
+  $("deploymentSku").addEventListener("change", () => {
+    updateCapacityFromSku(selectedCatalogModel(editingModel.seat));
+  });
+
+  $("saveModelEdit").addEventListener("click", saveModelEditor);
+  $("cancelModelEdit").addEventListener("click", () => $("modelDialog").close());
+
+  $("sendButton").addEventListener("click", sendMessage);
+  $("prompt").addEventListener("keydown", event => {
+    if (event.key === "Enter" && !event.shiftKey) {
+      event.preventDefault();
+      sendMessage();
+    }
+  });
+
+  $("stopButton").addEventListener("click", () => {
+    stopRequested = true;
+  });
+
+  $("turnButton").addEventListener("click", () => {
+    maxTurns = maxTurns === 4 ? 6 : maxTurns === 6 ? 2 : 4;
+    $("turnButton").textContent = `Turns: ${maxTurns}`;
+  });
+
+  $("menuButton").addEventListener("click", () => {
+    $("shell").classList.toggle("sidebar-open");
+  });
+  $("backdrop").addEventListener("click", closeSidebar);
+
+  document.addEventListener("click", event => {
+    if (!event.target.closest(".seat")) closePickers();
+  });
+
+  if (chats.length) {
+    chats.sort((a, b) => b.updatedAt - a.updatedAt);
+    activeChatId = chats[0].id;
+    selectedModels = {
+      one: chats[0].model1 || "",
+      two: chats[0].model2 || ""
+    };
+  } else {
+    const firstChat = makeChat();
+    chats.push(firstChat);
+    activeChatId = firstChat.id;
+    localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(chats));
+  }
+
+  renderChatList();
+  renderMessages();
+  updatePickerLabels();
+  updateSeatButtons();
+  loadModels();
+})();
+</script>
+</body>
+</html>
